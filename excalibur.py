@@ -1,6 +1,6 @@
 import os
 import json
-import requests
+import google.generativeai as genai
 
 def generate_with_gemini(prompt):
     api_key = os.getenv("GEMINI_API_KEY")
@@ -8,22 +8,12 @@ def generate_with_gemini(prompt):
         print("GEMINI_API_KEY が設定されていません。")
         return None
 
-    # 最新のエンドポイント（v1beta / gemini-1.5-flash）
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    data = {
-        "contents": [{
-            "parts": [{"text": prompt}]
-        }]
-    }
-
     try:
-        response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()
-        result = response.json()
-        return result["candidates"][0]["content"]["parts"][0]["text"]
+        # 公式SDKの設定と呼び出し
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        return response.text
     except Exception as e:
         print(f"Gemini API 呼び出しエラー: {e}")
         return None
