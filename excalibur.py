@@ -7,7 +7,7 @@ from google import genai
 # リクエスト拒否を防ぐための標準的なUser-Agentヘッダー
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
-# 確実に取得可能な主要RSSフィード一覧
+# ハイブリッド情報源（AIニュース ＋ 海外個人開発・SaaS・開発者コミュニティ）
 RSS_URLS = [
     "https://techcrunch.com/category/artificial-intelligence/feed/",
     "https://venturebeat.com/category/ai/feed/",
@@ -50,7 +50,7 @@ def generate_article():
     news_text = "\n\n".join(news_list)
     client = genai.Client()
 
-    # 安全に構築されたプロンプト変数
+    # 読者が「絶対払う」レベルの圧倒的実利アセットを毎朝自動生成するプロンプト
     prompt = (
         "あなたは月額500円の有料マガジンで数千人の有料会員を抱えるトップAI・SaaSシニアアナリスト兼プロダクトエンジニアです。\n"
         f"提供された【本日取得した海外データ一覧】（計{len(news_list)}件）から厳選し、読者が「500円どころか5,000円の価値がある」と衝撃を受けるレベルの実用・実践型プレミアムレポートを執筆してください。\n\n"
@@ -93,13 +93,13 @@ def generate_article():
         "* **【日本で真似・応用するヒント】**\n\n"
         "---\n\n"
         "## 🛠️ 【即実践】本日の実利アセット（500円以上の価値を即回収）\n\n"
-        "### 1. 💻 コピペで即デプロイできる自動化コード（Python / TypeScript）\n"
-        "（本日のトピックやSaaS事例に関連し、読者の開発時間を大幅削減する実用的な自動化スクリプト・API連携コードをそのまま貼る）\n\n"
+        "### 1. 💻 コピペで即デプロイできる自動化コード\n"
+        "（本日のトピックやSaaS事例に関連し、読者の開発時間を大幅削減する実用的な自動化スクリプト・API連携コードをここに実コードとして出力する）\n\n"
         "### 2. 🤖 実務特化型・超精密システムプロンプト\n"
-        "（業務や自社プロダクトの検証でそのままChatGPT/ClaudeのSystem Promptにコピペして使える、制約条件・出力形式がカチカチに組み込まれた実用プロンプト）\n\n"
+        "（業務や自社プロダクトの検証でそのままChatGPT/ClaudeのSystem Promptにコピペして使える、制約条件・出力形式がカチカチに組み込まれた実用プロンプトをここに出力する）\n\n"
         "### 3. 📊 購読者限定スプレッドシート（海外SaaSデータベース）\n"
         "> 💡 本マガジン購読者限定で、本日紹介したプロダクトを含む「海外未上陸SaaS・月商データ・技術スタック一覧データベース」を更新中。\n"
-        "> 👉 [限定データベースを閲覧する（固定リンク）](#)\n\n"
+        "> 👉 [限定スプレッドシートを開く](https://docs.google.com/spreadsheets/d/あなたのシートID/edit?usp=sharing)\n\n"
         "---\n"
         "※実在するデータのみ扱い、架空のツール名は絶対に使用しないでください。"
     )
