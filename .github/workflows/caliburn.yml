@@ -1,16 +1,18 @@
 name: Project Caliburn Auto Bot
 
 on:
+  workflow_dispatch: # 手動実行ボタン用
   schedule:
-    # 毎日 午前9時（日本時間）に自動実行
-    - cron: '0 0 * * *'
-  workflow_dispatch: # 手動実行ボタン
+    - cron: '0 0 * * *' # 毎日自動実行
 
 jobs:
-  build:
+  run-bot:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # リポジトリへの書き込み権限
+
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -22,22 +24,18 @@ jobs:
         run: |
           pip install requests
 
-      - name: Run Verdandi Engine
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          python verdandi.py
+      - name: Run Verdandi (News Fetcher)
+        run: python verdandi.py
 
-      - name: Run Excalibur Engine
+      - name: Run Excalibur (AI Article Generator)
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          python excalibur.py
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python excalibur.py
 
-      - name: Commit and push generated content
+      - name: Commit and push generated article
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ posts/
-          git commit -m "Auto-generate news data and comparison article" || exit 0
+          git add posts/latest_comparison.md
+          git commit -m "Auto-generate comparison article [skip ci]" || exit 0
           git push
