@@ -1,6 +1,8 @@
 import os
+import time
 import feedparser
 from google import genai
+from google.genai.errors import APIError
 
 # 1. 取得する海外AIニュースのRSSフィード一覧
 RSS_URLS = [
@@ -14,7 +16,7 @@ def fetch_latest_ai_news():
     for url in RSS_URLS:
         try:
             feed = feedparser.parse(url)
-            for entry in feed.entries[:3]:  # 各メディアから最新3件を取得
+            for entry in feed.entries[:3]:
                 title = entry.get("title", "")
                 summary = entry.get("summary", entry.get("description", ""))
                 link = entry.get("link", "")
@@ -32,8 +34,6 @@ def generate_article():
         return
 
     news_text = "\n".join(news_list)
-
-    # Gemini APIの初期化
     client = genai.Client()
 
     prompt = f"""
@@ -50,32 +50,37 @@ def generate_article():
 4. Markdown形式で出力してください。
 """
 
-    # 未来のモデルアップデート・廃止に自動で対応するためのモデル候補リスト
     candidate_models = [
         "gemini-3.8-flash",
-        "gemini-flash-latest",
-        "gemini-2.5-flash",
-        "gemini-2.0-flash"
+        "gemini-flash-latest"
     ]
 
     response = None
-    for model_name in candidate_models:
-        try:
-            print(f"【カリバーン】モデル '{model_name}' で生成を試行中...")
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt
-            )
-            print(f"【カリバーン】成功: モデル '{model_name}' を使用して記事を生成しました。")
+    # 混雑時の503エラー対策として、モデル全体への試行を数回リトライする
+    for attempt in range(1, 4):
+        print(f"【カリバーン】記事生成トライアル #{attempt}...")
+        for model_name in candidate_models:
+            try:
+                print(f"【カリバーン】モデル '{model_name}' で生成を試行中...")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+                print(f"【カリバーン】成功: モデル '{model_name}' を使用して記事を生成しました。")
+                break
+            except Exception as e:
+                print(f"【カリバーン】モデル '{model_name}' 失敗: {e}")
+        
+        if response:
             break
-        except Exception as e:
-            print(f"【カリバーン】モデル '{model_name}' はスキップされました ({e})")
+        
+        print(f"【カリバーン】サーバーが混雑しているため、5秒後に再試行します...")
+        time.sleep(5)
 
     if not response:
-        print("Error: 利用可能なGeminiモデルが見つかりませんでした。")
+        print("Error: サーバー混雑により、利用可能なGeminiモデルで生成できませんでした。時間をおいて再実行してください。")
         return
 
-    # 生成された記事をファイルに保存
     os.makedirs("posts", exist_ok=True)
     with open("posts/latest_comparison.md", "w", encoding="utf-8") as f:
         f.write(response.text)
