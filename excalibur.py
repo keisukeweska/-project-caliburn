@@ -12,13 +12,16 @@ def fetch_latest_ai_news():
     """海外メディアから最新のAIニュース記事タイトルと概要を取得する"""
     news_items = []
     for url in RSS_URLS:
-        feed = feedparser.parse(url)
-        for entry in feed.entries[:3]:  # 各メディアから最新3件を取得
-            title = entry.get("title", "")
-            summary = entry.get("summary", entry.get("description", ""))
-            link = entry.get("link", "")
-            if title:
-                news_items.append(f"- タイトル: {title}\n  URL: {link}\n  概要: {summary[:200]}...")
+        try:
+            feed = feedparser.parse(url)
+            for entry in feed.entries[:3]:  # 各メディアから最新3件を取得
+                title = entry.get("title", "")
+                summary = entry.get("summary", entry.get("description", ""))
+                link = entry.get("link", "")
+                if title:
+                    news_items.append(f"- タイトル: {title}\n  URL: {link}\n  概要: {summary[:200]}...")
+        except Exception as e:
+            print(f"RSS取得エラー ({url}): {e}")
     return news_items
 
 def generate_article():
@@ -47,11 +50,30 @@ def generate_article():
 4. Markdown形式で出力してください。
 """
 
-    print("【カリバーン】本物の海外AIニュースを取得中...")
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
+    # 未来のモデルアップデート・廃止に自動で対応するためのモデル候補リスト
+    candidate_models = [
+        "gemini-3.8-flash",
+        "gemini-flash-latest",
+        "gemini-2.5-flash",
+        "gemini-2.0-flash"
+    ]
+
+    response = None
+    for model_name in candidate_models:
+        try:
+            print(f"【カリバーン】モデル '{model_name}' で生成を試行中...")
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt
+            )
+            print(f"【カリバーン】成功: モデル '{model_name}' を使用して記事を生成しました。")
+            break
+        except Exception as e:
+            print(f"【カリバーン】モデル '{model_name}' はスキップされました ({e})")
+
+    if not response:
+        print("Error: 利用可能なGeminiモデルが見つかりませんでした。")
+        return
 
     # 生成された記事をファイルに保存
     os.makedirs("posts", exist_ok=True)
