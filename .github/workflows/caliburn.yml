@@ -18,8 +18,12 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Run Caliburn Core
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run Verdandi Engine
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          echo "Project-Caliburn is running successfully!"
+          python verdandi.py
