@@ -8,8 +8,8 @@ def generate_with_gemini(prompt):
         print("GEMINI_API_KEY が設定されていません。")
         return None
 
-    # 無料で使える最新の gemini-1.5-flash モデルを指定
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    # 最新の安定版 API エンドポイント
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
     headers = {
         "Content-Type": "application/json"
     }
