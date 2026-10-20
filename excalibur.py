@@ -9,13 +9,51 @@ def generate_with_gemini(prompt):
         return None
 
     try:
-        # 新公式SDK（google-genai）での呼び出し
         client = genai.Client(api_key=api_key)
+        
+        # 1. 現在使えるモデルの一覧を自動取得して、生成に使える（generateContent対応の）ものを探す
+        available_models = []
+        for m in client.models.list():
+            # generateContentメソッドがサポートされているモデルを抽出
+            if "generateContent" in getattr(m, "supported_generation_methods", []):
+                available_models.append(m.name)
+        
+        print(f"利用可能なモデル一覧: {available_models}")
+
+        # 2. 優先的に使いたいモデルの候補リスト（flash系を優先）
+        preferred_models = [
+            "gemini-3.8-flash",
+            "gemini-2.5-flash",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro"
+        ]
+
+        # 優先リストの中で、実際に現在利用可能なモデルがあればそれを選択
+        target_model = None
+        for pref in preferred_models:
+            # "models/gemini-..." のような完全一致または部分一致を探す
+            matched = [m for m in available_models if pref in m]
+            if matched:
+                target_model = matched[0]
+                break
+        
+        # 優先リストに見つからなければ、利用可能なモデルの先頭を使う
+        if not target_model and available_models:
+            target_model = available_models[0]
+
+        if not target_model:
+            print("利用可能なGeminiモデルが見つかりませんでした。")
+            return None
+
+        print(f"使用するモデル: {target_model}")
+
+        # 3. 選択されたモデルで生成を実行
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model=target_model,
             contents=prompt,
         )
         return response.text
+
     except Exception as e:
         print(f"Gemini API 呼び出しエラー: {e}")
         return None
