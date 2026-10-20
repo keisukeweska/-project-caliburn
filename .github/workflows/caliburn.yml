@@ -1,41 +1,42 @@
-name: Project Caliburn Auto Bot
+name: Project Caliburn Auto Run
 
 on:
-  workflow_dispatch: # 手動実行ボタン用
+  workflow_dispatch: # 手動実行ボタン
   schedule:
-    - cron: '0 0 * * *' # 毎日自動実行
+    - cron: '0 0 * * *' # 毎日自動実行する場合
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # リポジトリへの書き込み権限
+      contents: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
+      # ⬇️ ここで requirements.txt を自動インストールします
       - name: Install dependencies
         run: |
-          pip install requests
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Run Verdandi (News Fetcher)
-        run: python verdandi.py
-
-      - name: Run Excalibur (AI Article Generator)
+      # ⬇️ その後で excalibur.py を実行します
+      - name: Run excalibur.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python excalibur.py
+        python excalibur.py
 
-      - name: Commit and push generated article
+      # 生成された記事やデータを自動コミット・プッシュする場合の設定（必要に応じて）
+      - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add posts/latest_comparison.md
-          git commit -m "Auto-generate comparison article [skip ci]" || exit 0
+          git add posts/
+          git commit -m "Auto-generate comparison article by Project-Caliburn" || exit 0
           git push
