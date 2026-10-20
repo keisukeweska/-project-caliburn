@@ -9,9 +9,11 @@ def generate_with_gemini(prompt):
         return None
 
     try:
-        # 公式SDKの設定と呼び出し
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # モデル名を一番確実なものに指定
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
