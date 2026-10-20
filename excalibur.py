@@ -8,67 +8,43 @@ def generate_with_gemini(prompt):
         print("GEMINI_API_KEY が設定されていません。")
         return None
 
-    try:
-        client = genai.Client(api_key=api_key)
-        
-        # 1. 現在使えるモデルの一覧を自動取得して、生成に使える（generateContent対応の）ものを探す
-        available_models = []
-        for m in client.models.list():
-            # generateContentメソッドがサポートされているモデルを抽出
-            if "generateContent" in getattr(m, "supported_generation_methods", []):
-                available_models.append(m.name)
-        
-        print(f"利用可能なモデル一覧: {available_models}")
+    client = genai.Client(api_key=api_key)
 
-        # 2. 優先的に使いたいモデルの候補リスト（flash系を優先）
-        preferred_models = [
-            "gemini-3.8-flash",
-            "gemini-2.5-flash",
-            "gemini-1.5-flash",
-            "gemini-1.5-pro"
-        ]
+    # 今後モデルが更新されても上から順に試して動くものを自動選出する候補リスト
+    candidate_models = [
+        "gemini-flash-latest",
+        "gemini-1.5-flash",
+        "gemini-2.5-flash",
+        "gemini-3.8-flash",
+        "gemini-pro"
+    ]
 
-        # 優先リストの中で、実際に現在利用可能なモデルがあればそれを選択
-        target_model = None
-        for pref in preferred_models:
-            # "models/gemini-..." のような完全一致または部分一致を探す
-            matched = [m for m in available_models if pref in m]
-            if matched:
-                target_model = matched[0]
-                break
-        
-        # 優先リストに見つからなければ、利用可能なモデルの先頭を使う
-        if not target_model and available_models:
-            target_model = available_models[0]
+    for model_name in candidate_models:
+        try:
+            print(f"モデル '{model_name}' での生成を試行中...")
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+            )
+            if response and response.text:
+                print(f"成功: モデル '{model_name}' を使用して記事を生成しました。")
+                return response.text
+        except Exception as e:
+            print(f"モデル '{model_name}' 試行失敗: {e}")
+            continue
 
-        if not target_model:
-            print("利用可能なGeminiモデルが見つかりませんでした。")
-            return None
-
-        print(f"使用するモデル: {target_model}")
-
-        # 3. 選択されたモデルで生成を実行
-        response = client.models.generate_content(
-            model=target_model,
-            contents=prompt,
-        )
-        return response.text
-
-    except Exception as e:
-        print(f"Gemini API 呼び出しエラー: {e}")
-        return None
+    print("すべてのモデル候補での生成に失敗しました。")
+    return None
 
 def generate_comparison_article():
     print("【エクスカリバー】Gemini APIを活用したSEO比較記事の自動生成を開始します...")
     
-    # データを読み込む
     data_path = "data/news.json"
     news_data = []
     if os.path.exists(data_path):
         with open(data_path, "r", encoding="utf-8") as f:
             news_data = json.load(f)
 
-    # AIへのプロンプト作成
     prompt = f"""
 以下の収集データをもとに、日本のユーザーに向けた『スマートAI比較ナビ』の最新記事を作成してください。
 
@@ -83,14 +59,11 @@ def generate_comparison_article():
 5. 最後に記事のまとめと、末尾に「※この記事は Project-Caliburn (スマートAI比較ナビ) により全自動生成されています。」を入れる。
 """
 
-    # Geminiで記事生成
     ai_article = generate_with_gemini(prompt)
 
-    # APIエラー時などのフォールバック
     if not ai_article:
         ai_article = "# スマートAI比較ナビ - 最新AIトレンド\n\nAI生成に失敗したため、基本情報を出力します。\n"
 
-    # ファイルに保存
     os.makedirs("posts", exist_ok=True)
     output_path = "posts/latest_comparison.md"
     with open(output_path, "w", encoding="utf-8") as f:
