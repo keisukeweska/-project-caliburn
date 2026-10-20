@@ -2,6 +2,7 @@ import os
 import time
 import feedparser
 import urllib.request
+import json
 from google import genai
 
 # リクエスト拒否を防ぐための標準的なUser-Agentヘッダー
@@ -40,6 +41,33 @@ def fetch_latest_tech_news():
     print(f"【カリバーン】合計 {len(news_items)} 件のハイブリッドデータを取得完了。")
     return news_items
 
+def send_to_discord(content):
+    webhook_url = os.environ.get("DISCORD_WEBHOOK_URL")
+    if not webhook_url:
+        print("【注意】DISCORD_WEBHOOK_URL が設定されていないため、Discord送信をスキップします。")
+        return
+
+    print("【カリバーン】Discordへ記事を送信中...")
+    
+    # Discordの文字数制限（2000文字）に対応するため、分割して送信する処理
+    chunks = [content[i:i+1900] for i in range(0, len(content), 1900)]
+    
+    for idx, chunk in enumerate(chunks):
+        payload = {
+            "content": f"📝 **【本日生成された有料マガジン原稿 ({idx+1}/{len(chunks)})】**\n\n{chunk}" if idx == 0 else chunk
+        }
+        headers = {"Content-Type": "application/json"}
+        req = urllib.request.Request(webhook_url, data=json.dumps(payload).encode("utf-8"), headers=headers)
+        
+        try:
+            with urllib.request.urlopen(req) as res:
+                pass
+            time.sleep(1) # 連投によるDiscordの制限回避
+        except Exception as e:
+            print(f"Discord送信エラー: {e}")
+
+    print("【カリバーン】Discordへの送信が完了しました！")
+
 def generate_article():
     news_list = fetch_latest_tech_news()
     
@@ -50,7 +78,6 @@ def generate_article():
     news_text = "\n\n".join(news_list)
     client = genai.Client()
 
-    # 読者が「絶対払う」レベルの圧倒的実利アセットを毎朝自動生成するプロンプト
     prompt = (
         "あなたは月額500円の有料マガジンで数千人の有料会員を抱えるトップAI・SaaSシニアアナリスト兼プロダクトエンジニアです。\n"
         f"提供された【本日取得した海外データ一覧】（計{len(news_list)}件）から厳選し、読者が「500円どころか5,000円の価値がある」と衝撃を受けるレベルの実用・実践型プレミアムレポートを執筆してください。\n\n"
@@ -134,11 +161,15 @@ def generate_article():
         print("Error: 記事生成に失敗しました。")
         return
 
+    # ローカル/GitHubに保存
     os.makedirs("posts", exist_ok=True)
     with open("posts/latest_comparison.md", "w", encoding="utf-8") as f:
         f.write(response.text)
     
-    print("【カリバーン】『月額500円・圧倒的実利仕様』の記事生成が完了しました！")
+    # Discordへ自動通知
+    send_to_discord(response.text)
+    
+    print("【カリバーン】全工程が正常に完了しました！")
 
 if __name__ == "__main__":
     generate_article()
