@@ -49,12 +49,13 @@ def send_to_discord(content):
 
     print("【カリバーン】Discordへ記事を送信中...")
     
-    # Discordの文字数制限（2000文字）に対応するため、分割して送信する処理
+    # Discordの文字数制限（2000文字）に対応するため、分割して送信
     chunks = [content[i:i+1900] for i in range(0, len(content), 1900)]
     
     for idx, chunk in enumerate(chunks):
+        # 1通目の冒頭に @everyone メンションをつけてスマホに通知を飛ばす
         payload = {
-            "content": f"📝 **【本日生成された有料マガジン原稿 ({idx+1}/{len(chunks)})】**\n\n{chunk}" if idx == 0 else chunk
+            "content": f"@everyone 📝 **【本日生成された有料マガジン原稿 ({idx+1}/{len(chunks)})】**\n\n{chunk}" if idx == 0 else chunk
         }
         headers = {"Content-Type": "application/json"}
         req = urllib.request.Request(webhook_url, data=json.dumps(payload).encode("utf-8"), headers=headers)
@@ -62,7 +63,7 @@ def send_to_discord(content):
         try:
             with urllib.request.urlopen(req) as res:
                 pass
-            time.sleep(1) # 連投によるDiscordの制限回避
+            time.sleep(1) # 連投制限回避
         except Exception as e:
             print(f"Discord送信エラー: {e}")
 
@@ -91,7 +92,7 @@ def generate_article():
         "2. **構成テンプレ（note有料ライン対応）**:\n\n"
         "# 🚀 【日刊AI＆海外SaaS動向】（鋭い見出し・ビジネス視点）\n\n"
         "> 💡 **今朝のインサイト（アナリストの眼）**\n"
-        "> （海外の動向から見えてきたAI業界・SaaSビジネスの「潮目・狙い目」を2〜3行で鋭く指摘）\n\n"
+        "> （海外の動向から見えてきたAI業界・SaaSビジネスの潮目・狙い目を2〜3行で鋭く指摘）\n\n"
         "## ⚡ 1分で掴む！今朝の3行要約（TL;DR）\n"
         "- **AIトピック1**: （1行要約）\n"
         "- **AIトピック2**: （1行要約）\n"
@@ -132,8 +133,8 @@ def generate_article():
     )
 
     candidate_models = [
-        "gemini-3.8-flash",
-        "gemini-flash-latest"
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
     ]
 
     response = None
@@ -161,12 +162,10 @@ def generate_article():
         print("Error: 記事生成に失敗しました。")
         return
 
-    # ローカル/GitHubに保存
     os.makedirs("posts", exist_ok=True)
     with open("posts/latest_comparison.md", "w", encoding="utf-8") as f:
         f.write(response.text)
     
-    # Discordへ自動通知
     send_to_discord(response.text)
     
     print("【カリバーン】全工程が正常に完了しました！")
