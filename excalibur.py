@@ -1,6 +1,6 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
 
 def generate_with_gemini(prompt):
     api_key = os.getenv("GEMINI_API_KEY")
@@ -9,12 +9,12 @@ def generate_with_gemini(prompt):
         return None
 
     try:
-        genai.configure(api_key=api_key)
-        
-        # モデル名を一番確実なものに指定
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        
-        response = model.generate_content(prompt)
+        # 新公式SDK（google-genai）での呼び出し
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
         return response.text
     except Exception as e:
         print(f"Gemini API 呼び出しエラー: {e}")
