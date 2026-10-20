@@ -1,0 +1,25 @@
+name: Project Caliburn Auto Bot
+
+on:
+  schedule:
+    # 毎日 午前9時（日本時間）に自動実行
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 手動実行ボタン
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Run Caliburn Core
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          echo "Project-Caliburn is running successfully!"
