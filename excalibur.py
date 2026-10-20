@@ -8,8 +8,8 @@ def generate_with_gemini(prompt):
         print("GEMINI_API_KEY が設定されていません。")
         return None
 
-    # 最新の安定版 API エンドポイント
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+    # 最新のエンドポイント（v1beta / gemini-1.5-flash）
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     headers = {
         "Content-Type": "application/json"
     }
@@ -38,7 +38,7 @@ def generate_comparison_article():
         with open(data_path, "r", encoding="utf-8") as f:
             news_data = json.load(f)
 
-    # AIへのプロンプト（指示書）作成
+    # AIへのプロンプト作成
     prompt = f"""
 以下の収集データをもとに、日本のユーザーに向けた『スマートAI比較ナビ』の最新記事を作成してください。
 
