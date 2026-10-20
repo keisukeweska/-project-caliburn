@@ -22,7 +22,6 @@ def fetch_latest_tech_news():
     
     for url in RSS_URLS:
         try:
-            # User-Agentを指定してHTTPリクエストを作成し、403拒否を回避
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
             with urllib.request.urlopen(req, timeout=10) as response:
                 xml_data = response.read()
@@ -51,6 +50,95 @@ def generate_article():
     news_text = "\n\n".join(news_list)
     client = genai.Client()
 
+    # 安全に構築されたプロンプト変数
     prompt = (
         "あなたは月額500円の有料マガジンで数千人の有料会員を抱えるトップAI・SaaSシニアアナリスト兼プロダクトエンジニアです。\n"
-        f"提供された【本日取得した海外データ一覧】（計{len(news_list)}件）から厳選し、読者が「500円どころか5,000円の価値がある」と衝撃を受けるレベルの実用・実践
+        f"提供された【本日取得した海外データ一覧】（計{len(news_list)}件）から厳選し、読者が「500円どころか5,000円の価値がある」と衝撃を受けるレベルの実用・実践型プレミアムレポートを執筆してください。\n\n"
+        "【本日取得した海外データ一覧】\n"
+        f"{news_text}\n\n"
+        "---\n\n"
+        "【執筆およびnote最適化ルール】\n\n"
+        "1. **トーン＆マナー**:\n"
+        "   - 定型的なAI文体（「〜を解説します」「いかがでしたか」等）は完全排除。\n"
+        "   - 業界の裏まで知り尽くしたプロの切れ味ある文体（「〜だ」「〜と言える」「正直ここは〜だ」）で執筆すること。\n\n"
+        "2. **構成テンプレ（note有料ライン対応）**:\n\n"
+        "# 🚀 【日刊AI＆海外SaaS動向】（鋭い見出し・ビジネス視点）\n\n"
+        "> 💡 **今朝のインサイト（アナリストの眼）**\n"
+        "> （海外の動向から見えてきたAI業界・SaaSビジネスの「潮目・狙い目」を2〜3行で鋭く指摘）\n\n"
+        "## ⚡ 1分で掴む！今朝の3行要約（TL;DR）\n"
+        "- **AIトピック1**: （1行要約）\n"
+        "- **AIトピック2**: （1行要約）\n"
+        "- **注目SaaS/開発事例**: （1行要約）\n\n"
+        "---\n"
+        "<!-- note有料ライン -->\n"
+        "---\n\n"
+        "## 🔍 今朝の厳選解説（AIトレンド ✕ 海外SaaSマネタイズ）\n\n"
+        "### 1. [AIトピック1のタイトル]\n"
+        "> 📌 **ここだけ抑えればOK**: \n"
+        "> 🌐 **一次ソース**: [公式記事リンク](URL)\n\n"
+        "* **【何が起きたのか】**\n"
+        "* **【裏の構造・競合比較】**\n"
+        "* **【日本企業・現場へのインパクト】**\n\n"
+        "### 2. [AIトピック2のタイトル]\n"
+        "> 📌 **ここだけ抑えればOK**: \n"
+        "> 🌐 **一次ソース**: [公式記事リンク](URL)\n\n"
+        "* **【何が起きたのか】**\n"
+        "* **【裏の構造・競合比較】**\n"
+        "* **【日本企業・現場へのインパクト】**\n\n"
+        "### 3. 🔥【注目の海外SaaS・個人開発分析】[3つ目のタイトル]\n"
+        "> 📌 **ここだけ抑えればOK**: \n"
+        "> 🌐 **一次ソース**: [公式記事リンク](URL)\n\n"
+        "* **【どんなプロダクト・事例か】**\n"
+        "* **【マネタイズ・グロースのポイント】**\n"
+        "* **【日本で真似・応用するヒント】**\n\n"
+        "---\n\n"
+        "## 🛠️ 【即実践】本日の実利アセット（500円以上の価値を即回収）\n\n"
+        "### 1. 💻 コピペで即デプロイできる自動化コード（Python / TypeScript）\n"
+        "（本日のトピックやSaaS事例に関連し、読者の開発時間を大幅削減する実用的な自動化スクリプト・API連携コードをそのまま貼る）\n\n"
+        "### 2. 🤖 実務特化型・超精密システムプロンプト\n"
+        "（業務や自社プロダクトの検証でそのままChatGPT/ClaudeのSystem Promptにコピペして使える、制約条件・出力形式がカチカチに組み込まれた実用プロンプト）\n\n"
+        "### 3. 📊 購読者限定スプレッドシート（海外SaaSデータベース）\n"
+        "> 💡 本マガジン購読者限定で、本日紹介したプロダクトを含む「海外未上陸SaaS・月商データ・技術スタック一覧データベース」を更新中。\n"
+        "> 👉 [限定データベースを閲覧する（固定リンク）](#)\n\n"
+        "---\n"
+        "※実在するデータのみ扱い、架空のツール名は絶対に使用しないでください。"
+    )
+
+    candidate_models = [
+        "gemini-3.8-flash",
+        "gemini-flash-latest"
+    ]
+
+    response = None
+    for attempt in range(1, 4):
+        print(f"【カリバーン】圧倒的価値プレミアム記事生成トライアル #{attempt}...")
+        for model_name in candidate_models:
+            try:
+                print(f"【カリバーン】モデル '{model_name}' で執筆中...")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+                print(f"【カリバーン】成功: 500円以上の実利価値を持つ記事を生成しました。")
+                break
+            except Exception as e:
+                print(f"【カリバーン】モデル '{model_name}' 失敗: {e}")
+        
+        if response:
+            break
+        
+        print(f"【カリバーン】5秒後に再試行します...")
+        time.sleep(5)
+
+    if not response:
+        print("Error: 記事生成に失敗しました。")
+        return
+
+    os.makedirs("posts", exist_ok=True)
+    with open("posts/latest_comparison.md", "w", encoding="utf-8") as f:
+        f.write(response.text)
+    
+    print("【カリバーン】『絶対払わせる破壊的仕様』の記事生成が完了しました！")
+
+if __name__ == "__main__":
+    generate_article()
