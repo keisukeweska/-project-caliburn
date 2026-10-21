@@ -1,95 +1,158 @@
 import os
 import time
-import requests
+import json
+import re
 import google.generativeai as genai
 
-# APIキーとDiscord Webhookの設定
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
 def get_available_models():
-    """現在APIで利用可能な generateContent 対応モデルを動的に取得する"""
+    """現在利用可能なモデルリストを動的に取得"""
     try:
         available_models = []
         for m in genai.list_models():
-            # generateContent（テキスト生成）に対応しているモデルを抽出
             if 'generateContent' in m.supported_generation_methods:
-                # 'models/gemini-xxx' からモデルID部分を取り出す
                 model_name = m.name.replace("models/", "")
                 available_models.append(model_name)
         
-        # 優先度の高いモデル（3.8 / 3.1 / flash系）が先頭に来るようにソート
         available_models.sort(key=lambda x: (
             0 if '3.8' in x else
             1 if '3.1' in x else
             2 if 'flash' in x else 3
         ))
-        
-        print(f"【カリバーン】現在利用可能なモデルリストを動的に取得完了: {available_models}")
         return available_models
-    except Exception as e:
-        print(f"【注意】モデル一覧の動的取得に失敗。バックアップリストを使用します: {e}")
-        # 万が一動的取得が失敗した際の予備リスト
+    except Exception:
         return ['gemini-3.8-flash', 'gemini-3.1-pro-preview', 'gemini-flash-latest']
 
-def generate_article_with_fallback(prompt_text):
-    """動的モデル取得 ＋ リトライ ＋ 全自動切り替えロジック"""
+def generate_json_data():
     models_to_try = get_available_models()
-    
-    max_retries_per_model = 2  # 各モデルでのリトライ回数
-    retry_delay = 10            # 混雑（503）時の待機時間（秒）
+    max_retries = 2
+    retry_delay = 10
+
+    prompt = """
+    海外の最新AIコーディング・開発支援ツールの比較データをJSON形式で作成してください。
+    以下のフォーマットのみを出力し、マークダウンのコードブロック(```json ... ```)を含めてください。
+
+    [
+      {
+        "id": "claude-code",
+        "name": "Claude Code",
+        "price": "$20/mo",
+        "models": ["Opus 4.6", "Sonnet 4.6"],
+        "usage": "Usage limits apply",
+        "tiers": 3,
+        "highlight": "Gold Standard",
+        "affiliate_url": "https://anthropic.com",
+        "description": "Anthropicの次世代ターミナル型AIコーディングエージェント。"
+      },
+      {
+        "id": "glm-zai",
+        "name": "GLM (Z.ai)",
+        "price": "$3/mo",
+        "models": ["GLM-5", "GLM-4.7"],
+        "usage": "~80 prompts",
+        "tiers": 3,
+        "highlight": "Free MCP Tools",
+        "affiliate_url": "https://z.ai",
+        "description": "圧倒的コスパを誇る軽量コード生成モデル。"
+      },
+      {
+        "id": "minimax",
+        "name": "MiniMax",
+        "price": "$10/mo",
+        "models": ["M2.5", "M2.5-highspeed"],
+        "usage": "100 prompts",
+        "tiers": 6,
+        "highlight": "100+ TPS",
+        "affiliate_url": "https://minimaxi.com",
+        "description": "超高速トークン生成を特長とする爆速モデル。"
+      },
+      {
+        "id": "kimi",
+        "name": "Kimi",
+        "price": "~$7/wk",
+        "models": ["Kimi K2.5"],
+        "usage": "300-1,200 calls",
+        "tiers": 1,
+        "highlight": "100 TPS",
+        "affiliate_url": "https://moonshot.cn",
+        "description": "長文コンテキストと高速推論に特化した開発支援AI。"
+      },
+      {
+        "id": "qwen",
+        "name": "Qwen (Alibaba)",
+        "price": "$10/mo",
+        "models": ["Qwen3.5-Plus", "Qwen3-Coder"],
+        "usage": "1,200 requests",
+        "tiers": 2,
+        "highlight": "Multi-model",
+        "affiliate_url": "https://aliyun.com",
+        "description": "Alibabaが提供する強力なオープンウェイト/商用コードAI。"
+      }
+    ]
+    """
 
     for model_name in models_to_try:
-        print(f"【カリバーン】モデル '{model_name}' で執筆を試行中...")
-        for attempt in range(1, max_retries_per_model + 1):
+        print(f"【カリバーン】モデル '{model_name}' でAIデータ生成中...")
+        for attempt in range(1, max_retries + 1):
             try:
                 model = genai.GenerativeModel(model_name)
-                response = model.generate_content(prompt_text)
+                response = model.generate_content(prompt)
                 
                 if response and response.text:
-                    print(f"【カリバーン】成功！モデル '{model_name}' で記事を生成しました。")
-                    return response.text
+                    # JSON部分だけを抽出
+                    text = response.text
+                    match = re.search(r'```json\s*(.*?)\s*```', text, re.DOTALL)
+                    if match:
+                        json_str = match.group(1)
+                    else:
+                        json_str = text
+                    
+                    # 正当なJSONかチェック
+                    data = json.loads(json_str)
+                    print(f"【カリバーン】成功！モデル '{model_name}' でデータ抽出完了。")
+                    return data
             except Exception as e:
-                print(f"【カリバーン】モデル '{model_name}' 試行 {attempt}/{max_retries_per_model} 失敗: {e}")
-                if attempt < max_retries_per_model:
-                    print(f"【カリバーン】{retry_delay}秒待機して再試行します...")
+                print(f"【カリバーン】モデル '{model_name}' 試行 {attempt}/{max_retries} 失敗: {e}")
+                if attempt < max_retries:
                     time.sleep(retry_delay)
-        
-        print(f"【カリバーン】モデル '{model_name}' は利用不可または混雑のためスキップ。次のモデルへ...")
 
-    raise Exception("すべての利用可能Geminiモデルでの記事生成に失敗しました。")
+    raise Exception("全モデルでデータ生成に失敗しました。")
 
-def send_to_discord(content):
-    if not DISCORD_WEBHOOK_URL:
-        print("【注意】DISCORD_WEBHOOK_URL が設定されていないため、Discord送信をスキップします。")
-        return
+def save_site_files(data):
+    """Webサイト用データとAI検索(GEO)用ファイルを保存"""
+    os.makedirs("public", exist_ok=True)
     
-    payload = {"content": content[:2000]}
-    response = requests.post(DISCORD_WEBHOOK_URL, json=payload)
-    if response.status_code in [200, 204]:
-        print("【カリバーン】Discordへの送信に成功しました！")
-    else:
-        print(f"【注意】Discord送信失敗: {response.status_code}, {response.text}")
+    # 1. 比較Webサイト用 JSONデータ
+    with open("public/data.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print("【カリバーン】public/data.json を出力しました。")
+    
+    # 2. AI検索(Perplexity / ChatGPT等)用 llms.txt
+    llms_text = f"# AI Coding Plans Comparison (2026 Updated)\n\n"
+    llms_text += "Updated regularly via Automated AI Pipeline.\n\n"
+    llms_text += "## Live Comparison Summary\n"
+    for item in data:
+        llms_text += f"- **{item['name']}**: Starting Price: {item['price']} | Core Models: {', '.join(item['models'])} | Highlight: {item['highlight']}\n"
+    
+    with open("public/llms.txt", "w", encoding="utf-8") as f:
+        f.write(llms_text)
+    print("【カリバーン】public/llms.txt (AI検索対策) を出力しました。")
+
+    # 3. クローラー用 robots.txt
+    robots_txt = "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n"
+    with open("public/robots.txt", "w", encoding="utf-8") as f:
+        f.write(robots_txt)
 
 def main():
-    print("【カリバーン】全自動堅牢モードで起動...")
-    
-    prompt = """
-    海外の最新AIツール・SaaSに関する情報をまとめ、開発者やテック層に向けた高価値な記事を作成してください。
-    記事には以下の要素を含めてください：
-    1. 【3行要約】
-    2. ツールの概要と革新的な点
-    3. 主な機能と活用例
-    4. 今後の展望・まとめ
-    """
-    
+    print("【カリバーン】比較メディア連動データ構築モード起動...")
     try:
-        article_text = generate_article_with_fallback(prompt)
-        send_to_discord(article_text)
-        print("【カリバーン】全工程が正常に完了しました！")
+        data = generate_json_data()
+        save_site_files(data)
+        print("【カリバーン】全てのデータ生成・保存処理が正常完了しました！")
     except Exception as e:
         print(f"Error: {e}")
         exit(1)
