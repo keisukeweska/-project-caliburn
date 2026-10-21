@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Coding Plans Compared Side by Side (2026)</title>
+    <meta name="description" content="Pricing, models, usage limits, and supported tools — find the plan that fits your workflow.">
+    
+    <!-- AI検索(GEO)用 構造化データ -->
+    <script id="schema-data" type="application/ld+json"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0f17',
+                        cardBg: '#131926',
+                        tableHeader: '#171f30',
+                        tableRow: '#111622',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0b0f17; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+        .gradient-text {
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glow-card {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- Header Section -->
+        <div class="text-center space-y-4">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-xs font-medium">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                ✨ 2026 · Updated regularly
+            </div>
+            
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">
+                AI Coding Plans <span class="gradient-text">Compared Side by Side</span>
+            </h1>
+            
+            <p class="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
+                Claude Code · GLM · MiniMax · Kimi · Qwen<br>
+                Pricing, models, usage limits, and supported tools — find the plan that fits your workflow
+            </p>
+            
+            <!-- Summary Stats Cards -->
+            <div id="stats-container" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto pt-4"></div>
+        </div>
+
+        <!-- Comparison Table Container -->
+        <div class="bg-cardBg border border-gray-800/80 rounded-2xl overflow-hidden shadow-2xl glow-card">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-tableHeader text-gray-400 font-medium text-xs uppercase tracking-wider border-b border-gray-800">
+                        <tr>
+                            <th class="py-4 px-6">Platform</th>
+                            <th class="py-4 px-6">Starting Price</th>
+                            <th class="py-4 px-6">Core Models</th>
+                            <th class="py-4 px-6">Usage (5h window)</th>
+                            <th class="py-4 px-6 text-center">Tiers</th>
+                            <th class="py-4 px-6 text-right">Highlight</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-gray-800/60 bg-tableRow"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-xs text-gray-500 pt-8">
+            <p>Automated AI Market Intelligence by Caliburn System · Data refreshed daily.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const res = await fetch('./data.json');
+                const data = await res.json();
+
+                // Stats Rendering
+                document.getElementById('stats-container').innerHTML = `
+                    <div class="bg-gray-900/80 border border-gray-800 rounded-xl p-3 text-center">
+                        <div class="text-xl font-bold text-white">${data.length}</div>
+                        <div class="text-xs text-gray-400">Platforms</div>
+                    </div>
+                    <div class="bg-gray-900/80 border border-gray-800 rounded-xl p-3 text-center">
+                        <div class="text-xl font-bold text-emerald-400">$3</div>
+                        <div class="text-xs text-gray-400">Lowest / mo</div>
+                    </div>
+                    <div class="bg-gray-900/80 border border-gray-800 rounded-xl p-3 text-center">
+                        <div class="text-xl font-bold text-white">10+</div>
+                        <div class="text-xs text-gray-400">AI Models</div>
+                    </div>
+                    <div class="bg-gray-900/80 border border-gray-800 rounded-xl p-3 text-center">
+                        <div class="text-xl font-bold text-white">20+</div>
+                        <div class="text-xs text-gray-400">Dev Tools</div>
+                    </div>
+                `;
+
+                // Table Rendering
+                document.getElementById('table-body').innerHTML = data.map(item => `
+                    <tr class="hover:bg-gray-800/40 transition-colors">
+                        <td class="py-4 px-6 font-semibold text-white">
+                            <a href="${item.affiliate_url}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-400 transition-colors">
+                                ${item.name}
+                            </a>
+                        </td>
+                        <td class="py-4 px-6 text-gray-200 font-medium">${item.price}</td>
+                        <td class="py-4 px-6">
+                            <div class="flex flex-wrap gap-1.5">
+                                ${item.models.map(m => `<span class="px-2 py-0.5 text-xs bg-gray-800 text-gray-300 rounded border border-gray-700">${m}</span>`).join('')}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-gray-400">${item.usage}</td>
+                        <td class="py-4 px-6 text-center">
+                            <span class="inline-block w-6 h-6 leading-6 rounded bg-gray-800 text-xs text-blue-400 font-bold">${item.tiers}</span>
+                        </td>
+                        <td class="py-4 px-6 text-right">
+                            <a href="${item.affiliate_url}" target="_blank" rel="noopener noreferrer" class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-800 hover:text-white transition-all">
+                                ${item.highlight}
+                            </a>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Schema.org JSON-LD
+                const schema = {
+                    "@context": "https://schema.org",
+                    "@type": "ItemList",
+                    "itemListElement": data.map((item, index) => ({
+                        "@type": "ListItem",
+                        "position": index + 1,
+                        "item": {
+                            "@type": "Product",
+                            "name": item.name,
+                            "offers": {
+                                "@type": "Offer",
+                                "price": item.price,
+                                "priceCurrency": "USD",
+                                "url": item.affiliate_url
+                            }
+                        }
+                    }))
+                };
+                document.getElementById('schema-data').textContent = JSON.stringify(schema);
+
+            } catch (err) {
+                console.error("Data load failed:", err);
+            }
+        }
+        loadData();
+    </script>
+</body>
+</html>
