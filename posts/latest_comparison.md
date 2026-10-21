@@ -1,12 +1,12 @@
-# 🚀 【日刊AI＆海外SaaS動向】MCPプロトコルを巡るFigmaの防衛戦と、DeepSeek推論エンジンOSS公開の地殻変動
+# 🚀 【日刊AI＆海外SaaS動向】計算資源の奪い合いと「脱・単純RAG」の現実解
 
-> 💡 **今朝のインサイト（アナリストの眼）**
-> AIエージェント標準となりつつある「MCP（Model Context Protocol）」に対し、Figma CEOのDylan Fieldが公然と異議を唱えた。プラットフォーマーが恐れているのは「データ吸い上げによる自社UIの形骸化」だ。プロトコル覇権の裏でSaaS各社がデータをどう防衛しつつAIに開放するのか、APIエコノミーの新たな冷戦が始まっている。
+> 💡 **今朝のインサイト（アナリストの眼）**  
+> 基盤モデル開発企業（Anthropic等）がクラウドベンダーと競合化し、インフラコストの泥沼に直面する一方で、現場では「DeepSeek特化の推論最適化フレームワーク（DeepInfer）」や「自律構築型ナレッジグラフ（yggy）」など、徹底した低コスト運用と検索精度の構造化へのシフトが加速している。APIを右から左へ流すだけのSaaSはマージン崩壊で消え、推論効率化とデータグラフ化を握ったプレイヤーだけが生き残る。
 
 ## ⚡ 1分で掴む！今朝の3行要約（TL;DR）
-- **AIトピック1**: FigmaのDylan Fieldが「MCPは完璧ではない」と発言。データ全公開を防ぎつつ複数プロトコルに対応する現実路線を表明。
-- **AIトピック2**: DeepSeekが独自の推論エンジン「DeepInfer」をOSS化。米政府の連邦機関排除令と真っ向から衝突するオープン化戦略。
-- **注目SaaS/開発事例**: プロトタイプ内に直接デザインフィードバックを埋め込む「Inflight」が登場。レビュープロセスの摩擦をゼロにするUI/UX特化SaaS。
+- **AIトピック1**: AnthropicのIPO前夜に浮上したクラウド調達の摩擦。AWS/Googleが競合として警戒を強め、インフラ費用高騰とコンピュート不足が深刻化。
+- **AIトピック2**: DeepSeek特化の高パフォーマンス推論フレームワーク「DeepInfer」が登場。vLLM一強の推論エコシステムに特化型最適化の波が到来。
+- **注目SaaS/開発事例**: 自動でナレッジグラフを組み上げるAIツール「yggy」がProduct Huntで登場。従来のベクトル検索RAGが抱える「文脈の欠落」を根本解決する設計思想が秀逸。
 
 ---
 <!-- note有料ライン -->
@@ -14,183 +14,150 @@
 
 ## 🔍 今朝の厳選解説（AIトレンド ✕ 海外SaaSマネタイズ）
 
-### 1. Figma CEOが突いた「MCPプロトコルの罠」とSaaSデータ囲い込みの攻防
-> 📌 **ここだけ抑えればOK**: Anthropicが推進するMCP（Model Context Protocol）に対し、Figmaは「すべてのデータを無防備に晒すプロトコル設計には乗れない」と牽制。自社プラットフォームの主権維持に舵を切った。  
-> 🌐 **一次ソース**: [TechCrunch記事](https://techcrunch.com/2026/10/20/figma-co-founder-dylan-field-thinks-mcp-is-not-a-perfect-protocol/)
+### 1. Anthropicのクラウド提携が泥沼化：IPOを阻む「コンピュート飢餓」とプラットフォームの罠
+> 📌 **ここだけ抑えればOK**: AWSやGoogleから巨額出資を受けながらも、彼ら自身が競合モデルを展開する中で計算資源の確保が難航。インフラコストが暴騰し、IPO戦略に影を落としている。  
+> 🌐 **一次ソース**: [TechCrunch](https://techcrunch.com/2026/10/20/anthropics-cloud-partnerships-are-getting-messy/)
 
 * **【何が起きたのか】**  
-  TechCrunchの取材に対し、Figmaの共同創業者兼CEOであるDylan Fieldは「MCPは完璧なプロトコルではない」と言及した。業界内でClaudeやCursorを中心にMCP対応がデファクトスタンダード化しつつある中、Figmaは可能な限り多くの標準規格をサポートする意向を示しつつも、「Figmaが持つ全データを外部AIに無防備に晒すつもりはない」と明確な境界線を引いた。
+  年内IPOを睨むAnthropicだが、クラウドプロバイダー（AWS、Google）からのGPU計算リソース確保で激しい摩擦が生じている。提携先であるはずのクラウド側が自社モデル（Amazon Olympus、Google Gemini）を猛烈にプッシュしており、Anthropicへの優遇枠を絞り始めている実態が露呈した。
 
 * **【裏の構造・競合比較】**  
-  Anthropicが主導するMCPは、あらゆるツールとコンテキストをLLMに透過的に接続する思想で設計されている。しかしSaaSベンダーから見れば、自社の核であるリッチなデータグラフやデザインアセットを安易にエージェントへ明け渡せば、ユーザーは自社UIを踏むことなくCursorやClaudeデスクトップから操作を完結させてしまう。  
-  つまり「UIのアンバンドル化」と「データのコモディティ化」だ。Figmaが警戒しているのはまさにこの構造であり、単一プロトコル（MCP）への全面依存を避け、自社主導のデータガバナンスとAPIレイヤーを死守する姿勢の現れだ。
+  「出資を受け、その資本で出資元のクラウドを借りる」という循環型取引の蜜月は終わった。MicrosoftとOpenAIの関係同様、モデルレイヤーとクラウドインフラレイヤーの利害衝突は不可避だ。推論コストが売上を圧迫する中、クラウド側がマージンを握っている以上、Anthropicの粗利構造は極めて脆弱だ。
 
 * **【日本企業・現場へのインパクト】**  
-  国内SaaSや自社プラットフォームを開発する企業は、「流行っているから」と無計画にMCPサーバーを立てて自社DBやアセットをエージェントへ全開示するのは極めて危険だ。必要なのは「どの粒度でデータをマスキングし、認可スコープをどう制御するか」のアーキテクチャ設計だ。APIエコノミーから「Agent-to-API」の時代に移る中で、プロトコルの選択とアクセス制御が企業の死活問題になる。
+  Claude 3.5 Sonnetに自社基幹SaaSを依存させている企業は、API価格の改定やクォータ制限のリスクを真剣に織り込むべき時期に来ている。マルチクラウド対応だけでなく、後述するオープンウェイトモデルのセルフホストをBプランとして設計しておくことが、開発責任者（VPoE/CTO）の必須防衛策になる。
 
 ---
 
-### 2. DeepSeekが推論エンジン「DeepInfer」をOSS公開、米政府排除令の直下で進む二極化
-> 📌 **ここだけ抑えればOK**: 米政府が連邦機関からDeepSeekの全面排除を命じた同日、DeepSeekは超高速推論エンジン「DeepInfer」を突如OSS化。地政学的制裁をオープンソースのエコシステムで突破する消耗戦へ突入。  
-> 🌐 **一次ソース**: [GitHubリポジトリ](https://github.com/deepseek-ai/DeepInfer) / [TechCrunch米政府命令記事](https://techcrunch.com/2026/10/20/us-orders-federal-agencies-to-remove-chinas-deepseek-ai-from-their-systems/)
+### 2. DeepSeek推論特化エンジン「DeepInfer」公開：推論コスト破壊の次の一手
+> 📌 **ここだけ抑えればOK**: DeepSeekモデル群のアーキテクチャに特化して極限までレイテンシとスループットを削り出すオープンソースフレームワーク「DeepInfer」が登場。  
+> 🌐 **一次ソース**: [GitHub - deepseek-ai/DeepInfer](https://github.com/deepseek-ai/DeepInfer)
 
 * **【何が起きたのか】**  
-  米バイデン・トランプ政権の移行期において、米連邦文民機関に対しDeepSeek製品および同技術を利用したサードパーティ製サービスの即時撤去命令が下された。国家安全保障とデータ流出を理由とした実質的な禁輸措置だ。  
-  しかしその直後、Hacker Newsでトレンド1位となったのは、DeepSeekが公開した推論エンジン「DeepInfer」のOSSリポジトリだった。vLLMやTensorRT-LLMに匹敵、あるいは特定ハードウェア上でそれを凌駕するレイテンシとMoE（Mixture of Experts）最適化を施したコードが完全にオープンソースとして世界に放流された。
+  DeepSeek公式から、自社モデル（MoEアーキテクチャ等）の推論効率を極限まで引き上げる専用フレームワーク「DeepInfer」がHacker Newsで公開され、エンジニアコミュニティで即座にトレンド入りした。
 
 * **【裏の構造・競合比較】**  
-  米国が政治的・法的な包囲網を敷くほど、DeepSeekは「オープンソースの公共財化」によって世界中のデベロッパーを味方につける戦略を加速させている。  
-  閉鎖的なOpenAIやAnthropicに対し、DeepSeekは推論レイヤーのボトルネック（KVキャッシュ管理やMoEのルーティングオーバーヘッド）を解決する実装を惜しみなく投下している。エンジニアコミュニティにとって「米政府の規制」よりも「手元で安価に超高速で動く推論エンジン」の魅力が勝る瞬間があり、規制の実効性をOSSの速度が追い越そうとしている。
+  汎用推論サーバーであるvLLMやTGIは、多様なモデルを動かせる反面、DeepSeek特有のスパースMoEルーティングやマルチヘッド・レイテンシ最適化においてオーバーヘッドが存在する。DeepInferはカーネルレベルでDeepSeekの重み配置とキャッシュ構造に最適化されており、同スペックのGPUインスタンス（H100/A100）での同時リクエスト処理数を大幅に引き上げ、トークン単価を圧縮する。
 
 * **【日本企業・現場へのインパクト】**  
-  エンタープライズの現場では、米系クラウド（AWS/Azure）のコンプライアンス要件に縛られる案件と、オンプレミスや国内GPUクラウド（さくらインターネット等）でコスト最優先の推論環境を構築する案件の二極化が決定的になった。DeepInferのアーキテクチャを取り入れることで、自前推論インフラのコストを従来の3分の1以下に圧縮できるポテンシャルがある。法務リスクと技術的メリットの境界線を冷静に見極めるフェーズに来ている。
+  高価なプロプライエタリAPI（OpenAI / Anthropic）を思考停止で呼び出す時代は終わった。社内ナレッジのバッチ処理やコード解析などの定型・大量処理タスクは、DeepSeek系モデル＋DeepInferのオンプレミス/専用インスタンス運用へ切り替えることで、月数百万円規模のAPI利用料を1/5以下に圧縮できる現実的な選択肢が手に入った。
 
 ---
 
-### 3. 🔥【注目の海外SaaS・個人開発分析】Inflight：プロトタイプ直接フィードバックツールの勝ち筋
-> 📌 **ここだけ抑えればOK**: 「プロトタイプとレビューの文脈分断」を解決。画面キャプチャをSlackに貼る無駄を排除し、インタラクティブなUIの中に直接フィードバックを埋め込む軽量SaaS。  
-> 🌐 **一次ソース**: [Product Huntプロダクトページ](https://www.producthunt.com/products/inflight-2)
+### 3. 🔥【注目の海外SaaS・個人開発分析】自動ナレッジグラフ生成「yggy」
+> 📌 **ここだけ抑えればOK**: 単純なChunk分割＋埋め込みベクトルのRAGを過去のものにする、ドキュメントから自動でエンティティ間の関係性を抽出・可視化・クエリ可能にする「自律型ナレッジグラフSaaS」。  
+> 🌐 **一次ソース**: [Product Hunt](https://www.producthunt.com/products/yggy)
 
 * **【どんなプロダクト・事例か】**  
-  「Inflight」は、Webアプリやプロトタイプの内部に直接フィードバック機能を埋め込み、テスターやステークホルダーが操作中のコンポーネント上にピンポイントでコメント、バグレポート、画面操作ログを残せるマイクロSaaSだ。従来のFigmaのコメント機能やLoomの録画による「動的な状態（ホバー、モーダル展開、フォーム入力後）のフィードバックが難しい」というペインを直接撃ち抜いている。
+  Notion、Google Drive、Slackなどの散乱した非構造化データを接続するだけで、LLMがバックグラウンドで「誰が」「何を」「どのプロジェクトで」「どう意思決定したか」をエンティティ・リレーションとして自動抽出し、ナレッジグラフ（知識ネットワーク）を自律構築するサービス。
 
 * **【マネタイズ・グロースのポイント】**  
-  Inflightの強みは「SDK1行の導入ハードルの低さ」と「プロダクトマネージャー・QAチームを巻き込んだシート課金モデル」にある。無料枠で1プロジェクト・数名まで使わせ、チーム連携（Jira、Linear、GitHub Issuesへの自動チケット起票）を有料プランでアンロックさせる典型的なB2B PLG（Product-Led Growth）を採用している。
+  従来の「AI検索（チャットUI）」は回答のハルシネーションと「なぜその回答になったか」のトレーサビリティ欠如がエンタープライズ導入の最大の壁だった。yggyは「グラフUI」を提供することで、関連するエッジ（根拠）を目視確認できるUXを実現。シート課金（1ユーザー月額$20〜）に加え、取り込みノード数に応じた従量課金モデルを設計している。
 
 * **【日本で真似・応用するヒント】**  
-  受託開発会社や国内SaaSの受入テスト（UAT）フェーズは、いまだに「Excelやスプレッドシートにキャプチャを貼り付けて行番号で管理する」という前時代的な運用が横行している。Inflightのように、ステージング環境のURLにスクリプトを1行埋め込むだけで、画面要素のセレクタ・コンソールエラー・画面サイズを自動取得してバックログに連携するツールを日本向け（Backlog連携や日本語フォント崩れ検知）にローカライズするだけで、月額数万円規模のB2B SaaSとして十分成立する。
+  日本のエンタープライズが求めているのは「雑なAIチャット」ではなく「属人化した業務マニュアルと稟議書の構造化」だ。LangChainやLlamaIndexのGraphRAGパイプラインをラップし、日本のレガシーなファイルサーバー（PDF・Word・Excelの山）に接続して「社内版人間関係・プロジェクト相関図」を自動生成するバーティカルSaaSには、莫大な予算が眠っている。
 
 ---
 
 ## 🛠️ 【即実践】本日の実利アセット（500円以上の価値を即回収）
 
 ### 1. 💻 コピペで即デプロイできる自動化コード
-**「SaaSの機密データを保護しながらLLMに安全なコンテキストだけを返すMCP/APIプロキシ」**  
-Figmaの懸念通り、MCPや外部エージェントに直接DBや生APIを繋ぐと、権限を無視したデータ取得が発生する。以下のNode.js（Express/TypeScript）コードは、エージェントからのリクエストを仲介し、機密プロパティ（メールアドレス、内部ID、未公開デザインデータ）を正規表現とスキーママスクで自動検閲してサニタイズする軽量リバースプロキシだ。
+本日のyggyの思想を自前実装するための**「非構造化テキストからナレッジグラフ用トリプル（主語-述語-目的語）を自動抽出して構造化JSONを出力するPythonスクリプト」**。LiteLLMやOpenAI互換API（DeepSeek等）で即座に動作する。
 
-```typescript
-// sanitize-mcp-proxy.ts
-// 実行: npx ts-node sanitize-mcp-proxy.ts
-import express, { Request, Response } from 'express';
-import axios from 'axios';
+```python
+import json
+import os
+from openai import OpenAI
+from pydantic import BaseModel, Field
 
-const app = express();
-app.use(express.json());
+# DeepSeekやOpenAI、ローカルエンドポイント等に柔軟に対応
+client = OpenAI(
+    api_key=os.environ.get("OPENAI_API_KEY", "your-api-key"),
+    # base_url="http://localhost:8000/v1" # DeepInfer / vLLMを利用する場合はここを指定
+)
 
-const UPSTREAM_API_BASE = process.env.UPSTREAM_API_BASE || 'https://api.internal-saas.com/v1';
-const SENSITIVE_KEYS = ['email', 'password', 'token', 'internal_notes', 'salary', 'credit_card'];
+class KnowledgeEdge(BaseModel):
+    subject: str = Field(description="主語となるエンティティ（例: Anthropic, Project A）")
+    predicate: str = Field(description="関係性・動詞（例: relies_on, developed_by）")
+    object: str = Field(description="目的語となるエンティティ（例: AWS, Ken）")
+    confidence: float = Field(description="確信度 0.0〜1.0")
 
-// 再帰的に機密フィールドをマスキングする関数
-function sanitizePayload(obj: any): any {
-  if (Array.isArray(obj)) {
-    return obj.map(sanitizePayload);
-  } else if (obj !== null && typeof obj === 'object') {
-    const cleaned: Record<string, any> = {};
-    for (const [key, value] of Object.entries(obj)) {
-      if (SENSITIVE_KEYS.some(k => key.toLowerCase().includes(k))) {
-        cleaned[key] = '[REDACTED_BY_GUARDRAIL]';
-      } else {
-        cleaned[key] = sanitizePayload(value);
-      }
-    }
-    return cleaned;
-  }
-  return obj;
-}
+class KnowledgeGraphExtraction(BaseModel):
+    entities: list[str] = Field(description="抽出された主要エンティティのリスト")
+    relations: list[KnowledgeEdge] = Field(description="エンティティ間のリレーション一覧")
 
-// エージェント/MCPクライアント向けプロキシエンドポイント
-app.post('/agent/query', async (req: Request, res: Response) => {
-  const { endpoint, method = 'GET', data = {} } = req.body;
+def extract_knowledge_graph(text: str) -> dict:
+    """テキストからエンティティとリレーションを厳格なJSONスキーマで抽出"""
+    prompt = f"""
+以下のテキストから、ナレッジグラフを構築するためのエンティティおよび関係性（トリプル）を抽出してください。
+推測は排除し、テキストに明記されている事実のみを抽出してください。
 
-  if (!endpoint || typeof endpoint !== 'string') {
-    return res.status(400).json({ error: 'Endpoint path is required.' });
-  }
+【対象テキスト】:
+{text}
+"""
+    response = client.beta.chat.completions.parse(
+        model="gpt-4o-mini", # またはローカル互換モデル
+        messages=[
+            {"role": "system", "content": "あなたは非構造化テキストを構造化グラフデータに変換する専門家です。"},
+            {"role": "user", "content": prompt}
+        ],
+        response_format=KnowledgeGraphExtraction,
+        temperature=0.0
+    )
+    return response.choices[0].message.parsed.model_dump()
 
-  try {
-    // 内部APIへフォワード
-    const response = await axios({
-      method,
-      url: `${UPSTREAM_API_BASE}${endpoint}`,
-      data: method !== 'GET' ? data : undefined,
-      headers: {
-        'Authorization': `Bearer ${process.env.INTERNAL_SERVICE_KEY || 'dummy-key'}`,
-        'X-Agent-Context': 'true'
-      }
-    });
-
-    // 取得したレスポンスから機密情報をフィルタリング
-    const sanitizedData = sanitizePayload(response.data);
-
-    return res.json({
-      status: 'success',
-      sanitized: true,
-      data: sanitizedData
-    });
-  } catch (error: any) {
-    return res.status(error.response?.status || 500).json({
-      error: 'Upstream connection failed',
-      message: error.message
-    });
-  }
-});
-
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`🛡️ Safe MCP Guardrail Proxy running on port ${PORT}`);
-});
+if __name__ == "__main__":
+    sample_text = (
+        "Anthropic is struggling to secure enough compute from AWS, "
+        "even as its infrastructure spending balloons ahead of a planned November IPO."
+    )
+    result = extract_knowledge_graph(sample_text)
+    print(json.dumps(result, indent=2, ensure_ascii=False))
 ```
 
 ---
 
 ### 2. 🤖 実務特化型・超精密システムプロンプト
-**「プロトタイプ／UIフィードバック自動トリアージ＆Linear/Jiraチケット仕様書ジェネレーター」**  
-Inflightのようなレビューツールから収集された曖昧な定性コメントを、開発者がそのまま実装に入れるレベルの厳密なIssueチケットに変換するSystem Prompt。ChatGPT-4oやClaude 3.5 Sonnetに設定して使用する。
+社内ドキュメントや議事録をGraphRAG用の「事実ベース・ナレッジトリプル」に落とし込むための、ハルシネーション抑制プロンプト。
 
 ```markdown
-# あなたの役割
-あなたは世界最高峰のリードプロダクトマネージャー兼シニアフロントエンドエンジニアです。
-ユーザーやテスターから寄せられた「曖昧で感情的なUI/UXフィードバック」を分析し、開発チームが即座にスプリントへ追加できる厳密なエンジニアリング仕様書（Ticket）へ変換してください。
+# 役割定義
+あなたはエンタープライズ向けGraphRAGシステムの最上流を担う「データ構造化オントロジー・エンジニア」です。入力された文書から、後続のグラフデータベース（Neo4j等）に格納可能な高品質トリプル（Subject -> Predicate -> Object）を抽出します。
 
-# 処理フロー
-1. フィードバックの本質的な課題（UIバグ、UX摩擦、パフォーマンス、仕様不足）を特定する。
-2. 再現手順を論理的に再構築する。
-3. 影響度（Impact）と緊急度（Urgency）から優先度（P0〜P3）を判定する。
-4. 以下の【出力フォーマット】に厳密に従って出力する。挨拶や前置きは一切出力しない。
-
-# 制約条件
-- 曖昧な表現（「使いづらい」「変な感じがする」等）は、客観的な振る舞い（DOMイベント、CSSステート、認知的負荷）の言葉に置換すること。
-- Figma/Inflightの座標データやスクリーンショット記述がある場合は、該当コンポーネント（Button, Modal, Inputなど）を推定して明記すること。
-- レスポンシブ、アクセシビリティ（a11y）、例外処理の観点を「受け入れ基準」に必ず含めること。
+# 抽出ルール・制約条件
+1. **推論の禁止**: 文脈から「ありそう」な関係を補完してはならない。原文に明示されている事実のみを抽出せよ。
+2. **エンティティの正規化**:
+   - 代名詞（「彼」「同社」「このプロジェクト」）は、文脈から特定可能な正式名称に必ず解決せよ。
+   - 略称と正式名称が存在する場合、最も具体的かつ一意な名称に統一せよ。
+3. **述語（Predicate）の標準化**:
+   - スネークケース（例: `invested_in`, `reports_to`, `competes_with`, `depends_on`）を使用せよ。
+   - 曖昧な述語（`is_related_to` 等）の使用は禁止する。具体的な作用・状態を記述せよ。
+4. **テンポラル（時間）情報の付与**:
+   - 時期・日付が特定可能な場合は、エッジのプロパティとして `timestamp` または `effective_date` を必ず保持せよ。
 
 # 出力フォーマット
-## [チケットタイトル: コンポーネント名 - 発生する事象と期待される振る舞い]
-- **Type**: [Bug / UX Improvement / Feature Request]
-- **Priority**: [P0 (Blocker) / P1 (High) / P2 (Medium) / P3 (Low)]
-- **Target Component**: [該当するUI要素・画面名]
+出力は以下のJSONフォーマットのみを返せ（Markdownのコードブロックは不要。純粋なJSONのみ）。
 
-### 1. 概要とユーザーペイン
-[何が起きており、ユーザーのどのようなゴールが阻害されているかを2行以内で記述]
-
-### 2. 再現手順 (Steps to Reproduce)
-1. 
-2. 
-3. 
-
-### 3. 期待される挙動 (Expected Behavior)
-- [正常系の挙動]
-- [異常系・エッジケースの挙動]
-
-### 4. 受け入れ基準 (Acceptance Criteria / Definition of Done)
-- [ ] AC 1: 
-- [ ] AC 2: 
-- [ ] AC 3 (a11y/レスポンシブ要件含む): 
-
-### 5. 技術的考察（実装のヒント）
-- 推定される原因コード/CSSプロパティ/ステート管理の課題:
+{
+  "graph": {
+    "nodes": [
+      {"id": "エンティティ名", "type": "ORGANIZATION | PERSON | PRODUCT | CONCEPT | EVENT"}
+    ],
+    "edges": [
+      {
+        "source": "エンティティ名",
+        "target": "エンティティ名",
+        "predicate": "標準化された関係性",
+        "weight": 1.0,
+        "evidence_quote": "抽出元となった原文の完全な一文"
+      }
+    ]
+  }
+}
 ```
 
 ---
 
 ### 3. 📊 購読者限定スプレッドシート（海外SaaSデータベース）
-> 💡 本マガジン購読者限定で、本日紹介したプロダクトを含む「海外未上陸SaaS・月商データ・技術スタック一覧データベース」を更新中。  
+> 💡 本マガジン購読者限定で、本日紹介したプロダクトを含む「海外未上陸SaaS・月商データ・技術スタック一覧データベース」を更新中。
 > 👉 [限定スプレッドシートを開く](https://docs.google.com/spreadsheets/d/1R877xVvo3KWSciMV3GtxIji091-l_trk99FZZc2LcHI/edit?usp=sharing)
