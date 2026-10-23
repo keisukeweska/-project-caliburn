@@ -14,6 +14,34 @@
     "description": "Anthropicの次世代ターミナル型AIコーディングエージェント。"
   },
   {
+    "id": "cursor",
+    "name": "Cursor",
+    "price": "$20/mo",
+    "models": [
+      "Claude 3.7 Sonnet",
+      "GPT-4o"
+    ],
+    "usage": "500 fast requests/mo",
+    "tiers": 3,
+    "highlight": "Best Code Editor",
+    "affiliate_url": "https://cursor.com",
+    "description": "VS Codeフォークで最も普及しているAIファーストコードエディタ。"
+  },
+  {
+    "id": "windsurf",
+    "name": "Windsurf",
+    "price": "$15/mo",
+    "models": [
+      "Claude 3.7 Sonnet",
+      "Cascade Flow"
+    ],
+    "usage": "500 prompt credits",
+    "tiers": 3,
+    "highlight": "Agentic Flows",
+    "affiliate_url": "https://codeium.com/windsurf",
+    "description": "Codeiumが開発したエージェント型ワークフロー重視のAIエディタ。"
+  },
+  {
     "id": "glm-zai",
     "name": "GLM (Z.ai)",
     "price": "$3/mo",
