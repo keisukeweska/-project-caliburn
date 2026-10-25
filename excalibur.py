@@ -1,29 +1,9 @@
 import os
-import time
 import json
-import re
-from google import genai
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Client()
-
-# ==========================================
-# 💰 あなたの紹介報酬が入るアフィリエイトURL定義
-# ==========================================
-AFFILIATE_URLS = {
-    "Claude Code": "https://anthropic.com?ref=YOUR_AFFILIATE_ID",
-    "GLM (Z.ai)": "https://z.ai?ref=YOUR_AFFILIATE_ID",
-    "MiniMax": "https://minimaxi.com?ref=YOUR_AFFILIATE_ID",
-    "Kimi": "https://moonshot.cn?ref=YOUR_AFFILIATE_ID",
-    "Qwen (Alibaba)": "https://aliyun.com?ref=YOUR_AFFILIATE_ID"
-}
-
-def generate_json_data():
-    prompt = """
-    海外の最新AIコーディング・開発支援ツールの比較データをJSON形式で作成してください。
-    以下のフォーマットのみを出力し、マークダウンのコードブロック(```json ... ```)を含めてください。
-
-    [
+def generate_static_data():
+    """API通信なしで、確実かつ高速に最新のアフィリエイト比較データを構築"""
+    return [
       {
         "id": "claude-code",
         "name": "Claude Code",
@@ -80,35 +60,6 @@ def generate_json_data():
         "description": "Alibabaが提供する強力なオープンウェイト/商用コードAI。"
       }
     ]
-    """
-
-    models_to_try = ['gemini-3.8-flash', 'gemini-flash-latest']
-    
-    for model_name in models_to_try:
-        print(f"【カリバーン】モデル '{model_name}' でデータ構築中...")
-        try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt,
-            )
-            if response and response.text:
-                text = response.text
-                match = re.search(r'```json\s*(.*?)\s*```', text, re.DOTALL)
-                json_str = match.group(1) if match else text
-                data = json.loads(json_str)
-                
-                # アフィリエイトURLの差し替え補正
-                for item in data:
-                    if item['name'] in AFFILIATE_URLS:
-                        item['affiliate_url'] = AFFILIATE_URLS[item['name']]
-                        
-                print(f"✅ 成功！モデル '{model_name}' でデータ生成完了。")
-                return data
-        except Exception as e:
-            print(f"⚠️ モデル '{model_name}' 失敗: {e}")
-            time.sleep(3)
-
-    raise Exception("全モデルで生成に失敗しました。")
 
 def save_site_files(data):
     os.makedirs("public", exist_ok=True)
@@ -127,7 +78,7 @@ def save_site_files(data):
     print("【カリバーン】public/llms.txt を出力しました。")
 
 if __name__ == "__main__":
-    print("🚀 [Caliburn] 比較メディア連動データ構築モード起動...")
-    data = generate_json_data()
+    print("🚀 [Caliburn] 高速データ構築モード起動...")
+    data = generate_static_data()
     save_site_files(data)
-    print("✅ 全ての自動生成処理が正常完了しました！")
+    print("✅ 全ての自動生成処理がエラーなしで正常完了しました！")
