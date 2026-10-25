@@ -2,35 +2,36 @@ import os
 import time
 import json
 import re
-import google.generativeai as genai
+from google import genai
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+# 新しいSDK（google-genai）でのクライアント初期化
+client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Client()
 
 def get_available_models():
     """現在利用可能なモデルリストを動的に取得"""
     try:
         available_models = []
-        for m in genai.list_models():
+        for m in client.models.list():
+            # generateContentをサポートしているモデル名を取得
             if 'generateContent' in m.supported_generation_methods:
                 model_name = m.name.replace("models/", "")
                 available_models.append(model_name)
         
+        # 優先順位づけ
         available_models.sort(key=lambda x: (
-            0 if '3.8' in x else
-            1 if '3.1' in x else
-            2 if 'flash' in x else 3
+            0 if '2.5' in x else
+            1 if 'flash' in x else 2
         ))
-        return available_models
+        return available_models if available_models else ['gemini-2.5-flash', 'gemini-flash-latest']
     except Exception:
-        return ['gemini-3.8-flash', 'gemini-3.1-pro-preview', 'gemini-flash-latest']
+        return ['gemini-2.5-flash', 'gemini-flash-latest']
 
 def generate_json_data():
     models_to_try = get_available_models()
     max_retries = 2
-    retry_delay = 10
+    retry_delay = 5
 
     prompt = """
     海外の最新AIコーディング・開発支援ツールの比較データをJSON形式で作成してください。
@@ -99,11 +100,12 @@ def generate_json_data():
         print(f"【カリバーン】モデル '{model_name}' でAIデータ生成中...")
         for attempt in range(1, max_retries + 1):
             try:
-                model = genai.GenerativeModel(model_name)
-                response = model.generate_content(prompt)
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                )
                 
                 if response and response.text:
-                    # JSON部分だけを抽出
                     text = response.text
                     match = re.search(r'```json\s*(.*?)\s*```', text, re.DOTALL)
                     if match:
@@ -111,7 +113,6 @@ def generate_json_data():
                     else:
                         json_str = text
                     
-                    # 正当なJSONかチェック
                     data = json.loads(json_str)
                     print(f"【カリバーン】成功！モデル '{model_name}' でデータ抽出完了。")
                     return data
