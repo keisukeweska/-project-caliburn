@@ -1,10 +1,7 @@
 # AI Coding Plans Comparison (2026 Updated)
 
-Updated regularly via Automated AI Pipeline.
-
-## Live Comparison Summary
-- **Claude Code**: Starting Price: $20/mo | Core Models: Opus 4.6, Sonnet 4.6 | Highlight: Gold Standard
-- **GLM (Z.ai)**: Starting Price: $3/mo | Core Models: GLM-5, GLM-4.7 | Highlight: Free MCP Tools
-- **MiniMax**: Starting Price: $10/mo | Core Models: M2.5, M2.5-highspeed | Highlight: 100+ TPS
-- **Kimi**: Starting Price: ~$7/wk | Core Models: Kimi K2.5 | Highlight: 100 TPS
-- **Qwen (Alibaba)**: Starting Price: $10/mo | Core Models: Qwen3.5-Plus, Qwen3-Coder | Highlight: Multi-model
+- **Claude Code**: Price: $20/mo | Link: https://anthropic.com?ref=YOUR_AFFILIATE_ID
+- **GLM (Z.ai)**: Price: $3/mo | Link: https://z.ai?ref=YOUR_AFFILIATE_ID
+- **MiniMax**: Price: $10/mo | Link: https://minimaxi.com?ref=YOUR_AFFILIATE_ID
+- **Kimi**: Price: ~$7/wk | Link: https://moonshot.cn?ref=YOUR_AFFILIATE_ID
+- **Qwen (Alibaba)**: Price: $10/mo | Link: https://aliyun.com?ref=YOUR_AFFILIATE_ID
