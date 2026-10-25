@@ -8,7 +8,7 @@ client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Clien
 # 💰 あなたの紹介報酬が入るアフィリエイトリンク定義
 # ==========================================
 AFFILIATE_LINKS = {
-    "Claude Code": "https://anthropic.com?ref=YOUR_AFFILIATE_ID", # 自分のIDに書き換えOK
+    "Claude Code": "https://anthropic.com?ref=YOUR_AFFILIATE_ID",
     "GLM": "https://z.ai?ref=YOUR_AFFILIATE_ID",
     "MiniMax": "https://minimaxi.com?ref=YOUR_AFFILIATE_ID",
     "Kimi": "https://moonshot.cn?ref=YOUR_AFFILIATE_ID",
@@ -40,8 +40,9 @@ def generate_comparison_page():
     """
 
     print("【カリバーン】高単価アフィリエイト比較LPを生成中...")
+    # 指定された最新の gemini-3.8-flash を使用
     response = client.models.generate_content(
-        model='gemini-2.5-flash',
+        model='gemini-3.8-flash',
         contents=prompt,
     )
     return response.text
