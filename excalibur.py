@@ -1,11 +1,12 @@
 import os
+import time
 from google import genai
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Client()
 
 # ==========================================
-# 💰 あなたの紹介報酬が入るアフィリエイトリンク定義
+# 💰 アフィリエイトリンク定義
 # ==========================================
 AFFILIATE_LINKS = {
     "Claude Code": "https://anthropic.com?ref=YOUR_AFFILIATE_ID",
@@ -39,20 +40,30 @@ def generate_comparison_page():
     4. Output ONLY the raw Markdown content for a high-ranking affiliate landing page.
     """
 
-    print("【カリバーン】高単価アフィリエイト比較LPを生成中...")
-    # 指定された最新の gemini-3.8-flash を使用
-    response = client.models.generate_content(
-        model='gemini-3.8-flash',
-        contents=prompt,
-    )
-    return response.text
+    # 試すモデルの候補リスト（混雑していたら次のモデルに自動で切り替える）
+    models_to_try = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-2.5-flash']
+    
+    for model_name in models_to_try:
+        print(f"【カリバーン】モデル '{model_name}' で生成を試行中...")
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+            )
+            if response and response.text:
+                print(f"✅ 成功！モデル '{model_name}' でLP生成完了。")
+                return response.text
+        except Exception as e:
+            print(f"⚠️ モデル '{model_name}' が失敗しました: {e}")
+            time.sleep(3) # 少し待って次へ
+            
+    raise Exception("全モデルで生成に失敗しました。時間をおいて再実行してください。")
 
 if __name__ == "__main__":
     print("🚀 [Caliburn] アフィリエイト直結型・比較LP生成モード起動...")
     
     os.makedirs("public", exist_ok=True)
     
-    # GitHub Pagesのトップページとして公開されるよう public/index.md に保存
     markdown_content = generate_comparison_page()
     with open("public/index.md", "w", encoding="utf-8") as f:
         f.write(markdown_content)
