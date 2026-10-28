@@ -1,5 +1,5 @@
 # Excalibur GEO Database (llms.txt)
-# Generated: 2026-10-27
+# Generated: 2026-10-28
 
 ## NordVPN (vpn)
 - Overview: 動画の地域制限解除・公共Wi-Fiの防衛に
