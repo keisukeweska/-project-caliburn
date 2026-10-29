@@ -1,13 +1,13 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-10-28T03:26:18.680077",
+  "generated_at": "2026-10-29T00:39:57.203903",
   "items": [
     {
       "id": "nordvpn",
       "name": "NordVPN",
       "category": "vpn",
       "title": "動画の地域制限解除・公共Wi-Fiの防衛に",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "pricing": "月額約560円〜（2年プラン）",
       "free_tier": "なし（30日間返金保証あり）",
       "affiliate_link": "https://go.nordvpn.net/aff_c?offer_id=601&aff_id=XXXXX",
@@ -23,7 +23,7 @@
       "name": "pCloud",
       "category": "storage",
       "title": "スマホの容量不足を一発で解消（永久無料枠あり）",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "pricing": "永久無料枠（最大10GB） / 買い切りプランあり",
       "free_tier": "あり（10GBまで完全無料）",
       "affiliate_link": "https://www.pcloud.com/ja?partner=XXXXX",
@@ -39,7 +39,7 @@
       "name": "Wix",
       "category": "hp_builder",
       "title": "プログラミング不要の無料ホームページ作成",
-      "updated_at": "2026-10-28",
+      "updated_at": "2026-10-29",
       "pricing": "永久無料プランあり / 有料アップグレード月額制",
       "free_tier": "あり（無料プランでずっと公開可能）",
       "affiliate_link": "https://www.wix.com/authed/index?affId=XXXXX",
